@@ -2,7 +2,7 @@ package org.github.swsz2;
 
 import lombok.Getter;
 
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,21 +10,23 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Qworker<T> implements Chainable, Worker {
-  protected final Queue<T> queue;
+  protected final BlockingQueue<T> queue;
   protected final ExecutorService pool;
   protected final Mode mode;
+  protected final int concurrency;
 
   protected Qworker(final Builder builder) {
-    this.pool = Executors.newFixedThreadPool(builder.concurrency);
+    this.concurrency = builder.concurrency;
+    this.pool = Executors.newFixedThreadPool(this.concurrency);
     this.queue = new LinkedBlockingQueue<>();
     this.mode = builder.mode;
   }
 
-  public static class Builder {
+  public static class Builder<E, R> {
     private int concurrency;
     private Mode mode;
-    @Getter private Consumer<? extends Object> consumer;
-    @Getter private Function<? extends Object, ? extends Object> function;
+    @Getter private Consumer<E> consumer;
+    @Getter private Function<E, R> function;
 
     public Builder() {
       this.concurrency = 1;
@@ -41,12 +43,12 @@ public abstract class Qworker<T> implements Chainable, Worker {
       return this;
     }
 
-    public Builder consumer(final Consumer<? extends Object> consumer) {
+    public Builder consumer(final Consumer<E> consumer) {
       this.consumer = consumer;
       return this;
     }
 
-    public Builder function(final Function<? extends Object, ? extends Object> function) {
+    public Builder function(final Function<E, R> function) {
       this.function = function;
       return this;
     }
