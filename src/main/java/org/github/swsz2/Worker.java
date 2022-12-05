@@ -7,7 +7,5 @@ public interface Worker {
    *
    * @param work Qworker 선언시 입력한 work (class)와 동일할 경우에만 작업을 할당할 수 있다.
    */
-  default void publish(final Object work) {
-    throw new ImplementationNotFoundException();
-  }
+  <T extends Object> void publish(final T work);
 }

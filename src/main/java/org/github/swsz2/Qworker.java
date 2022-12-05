@@ -1,23 +1,30 @@
 package org.github.swsz2;
 
+import lombok.Getter;
+
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class Qworker implements Chainable, Worker {
-  // TODO: 2022-12-01 변경 불가 객체로 선언할 필요있음
-  LinkedBlockingQueue<?> queue;
-  ExecutorService pool;
+public abstract class Qworker<T extends Object> implements Chainable, Worker {
+  protected final Queue<T> queue;
+  protected final ExecutorService pool;
+  protected final Mode mode;
 
-  // TODO: 2022/12/04 생성자에 따른 구현체 추가
-  protected Qworker(final Builder builder) {}
+  protected Qworker(final Builder builder) {
+    this.pool = Executors.newFixedThreadPool(builder.concurrency);
+    this.queue = new LinkedBlockingQueue<>();
+    this.mode = builder.mode;
+  }
 
   public static class Builder {
     private int concurrency;
     private Mode mode;
-    private Consumer<?> consumer;
-    private Function<?, ?> function;
+    @Getter private Consumer<?> consumer;
+    @Getter private Function<?, ?> function;
 
     public Builder() {
       this.concurrency = 1;
