@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class Qworker<T extends Object> implements Chainable, Worker {
+public abstract class Qworker<T> implements Chainable, Worker {
   protected final Queue<T> queue;
   protected final ExecutorService pool;
   protected final Mode mode;
@@ -23,8 +23,8 @@ public abstract class Qworker<T extends Object> implements Chainable, Worker {
   public static class Builder {
     private int concurrency;
     private Mode mode;
-    @Getter private Consumer<?> consumer;
-    @Getter private Function<?, ?> function;
+    @Getter private Consumer<? extends Object> consumer;
+    @Getter private Function<? extends Object, ? extends Object> function;
 
     public Builder() {
       this.concurrency = 1;
@@ -41,12 +41,12 @@ public abstract class Qworker<T extends Object> implements Chainable, Worker {
       return this;
     }
 
-    public Builder consumer(final Consumer<?> consumer) {
+    public Builder consumer(final Consumer<? extends Object> consumer) {
       this.consumer = consumer;
       return this;
     }
 
-    public Builder function(final Function<?, ?> function) {
+    public Builder function(final Function<? extends Object, ? extends Object> function) {
       this.function = function;
       return this;
     }
