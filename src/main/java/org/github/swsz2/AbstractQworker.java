@@ -78,7 +78,7 @@ public abstract class AbstractQworker<T> implements Chainable, QWorker {
       return this;
     }
 
-    public AbstractQworker build() {
+    public QWorker build() {
       switch (mode) {
         case CONSUMER:
           return new ConsumerQworker(this);
