@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 
 import java.util.function.Function;
 
-public class FunctionQworker extends Qworker {
+public class FunctionQworker extends AbstractQworker {
 
   private final Function<? extends Object, ? extends Object> function;
 

@@ -2,20 +2,17 @@ package org.github.swsz2;
 
 import lombok.Getter;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class Qworker<T> implements Chainable, Worker {
+public abstract class AbstractQworker<T> implements Chainable, QWorker {
   protected final BlockingQueue<T> queue;
   protected final ExecutorService pool;
   protected final Mode mode;
   protected final int concurrency;
 
-  protected Qworker(final Builder builder) {
+  protected AbstractQworker(final Builder builder) {
     this.concurrency = builder.concurrency;
     this.pool = Executors.newFixedThreadPool(this.concurrency);
     this.queue = new LinkedBlockingQueue<>();
@@ -25,12 +22,16 @@ public abstract class Qworker<T> implements Chainable, Worker {
   public static class Builder<E, R> {
     private int concurrency;
     private Mode mode;
+    @Getter private int sleep;
+    @Getter private TimeUnit timeUnit;
     @Getter private Consumer<E> consumer;
     @Getter private Function<E, R> function;
 
     public Builder() {
       this.concurrency = 1;
       this.mode = Mode.CONSUMER;
+      this.sleep = 1;
+      this.timeUnit = TimeUnit.SECONDS;
     }
 
     public Builder concurrency(final int concurrency) {
@@ -53,7 +54,31 @@ public abstract class Qworker<T> implements Chainable, Worker {
       return this;
     }
 
-    public Qworker build() {
+    /**
+     * 메시지를 Take하는 주기를 설정한다. <br>
+     * 기본 sleep 설정은 1이다.
+     *
+     * @param sleep sleep
+     * @return Builder
+     */
+    public Builder sleep(final int sleep) {
+      this.sleep = sleep;
+      return this;
+    }
+
+    /**
+     * 메시지를 Take하는 주기를 설정한다. <br>
+     * 기본 TimeUnit 설정은 TimeUnit.MILLISECONDS이다.
+     *
+     * @param timeUnit timeUnit
+     * @return Builder
+     */
+    public Builder timeUnit(final TimeUnit timeUnit) {
+      this.timeUnit = timeUnit;
+      return this;
+    }
+
+    public AbstractQworker build() {
       switch (mode) {
         case CONSUMER:
           return new ConsumerQworker(this);
